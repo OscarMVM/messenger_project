@@ -8,37 +8,40 @@
 #include <stdio.h>
 #define MAX 80 
 #define PORT 8080 
-#define SA struct sockaddr 
-  
-// Function designed for chat between client and server. 
-void func(int sockfd) 
-{ 
+#define SA struct sockaddr
+#define COLOR_BLUE    "\x1b[34m" 
+#define COLOR_GREEN   "\x1b[32m"
+
+
+void readFuncion(int sockfd){
     char buff[MAX]; 
-    int n; 
-    // infinite loop for chat 
-    for (;;) { 
-        bzero(buff, MAX); 
-  
-        // read the message from client and copy it in buffer 
+    int n; 	
+    for(;;){
+	// read the message from client and copy it in buffer 
         read(sockfd, buff, sizeof(buff)); 
         // print buffer which contains the client contents 
-        printf("From client: %s\t To client : ", buff); 
-        bzero(buff, MAX); 
-        n = 0; 
-        // copy server message in the buffer 
-        while ((buff[n++] = getchar()) != '\n') 
-            ; 
-  
-        // and send that buffer to client 
-        write(sockfd, buff, sizeof(buff)); 
-  
-        // if msg contains "Exit" then server exit and chat ended. 
+        printf(COLOR_GREEN "Desde el Cliente: %s", buff); 
+        n = 0;
+	// if msg contains "Exit" then server exit and chat ended. 
         if (strncmp("exit", buff, 4) == 0) { 
             printf("Server Exit...\n"); 
             break; 
-        } 
-    } 
+        }
+        bzero(buff, MAX);    
+    }
+}
+
+void writeFuncion(int sockfd){
+    char buff[MAX]; 
+    int n; 
+    for(;;){
+        // copy server message in the buffer 
+        while ((buff[n++] = getchar()) != '\n'); 
+  	// send that buffer to client 
+        write(sockfd, buff, sizeof(buff)); 
+    }
 } 
+
   
 // Driver function 
 int main() 
@@ -53,7 +56,7 @@ int main()
         exit(0); 
     } 
     else
-        printf("Socket successfully created..\n"); 
+        printf("[+]Socket successfully created..\n"); 
     bzero(&servaddr, sizeof(servaddr)); 
   
     // assign IP, PORT 
@@ -67,7 +70,7 @@ int main()
         exit(0); 
     } 
     else
-        printf("Socket successfully binded..\n"); 
+        printf("[+]Socket successfully binded..\n"); 
   
     // Now server is ready to listen and verification 
     if ((listen(sockfd, 5)) != 0) { 
@@ -75,7 +78,7 @@ int main()
         exit(0); 
     } 
     else
-        printf("Server listening..\n"); 
+        printf("[+]Server listening...\n"); 
     len = sizeof(cli); 
   
     // Accept the data packet from client and verification 
@@ -85,10 +88,14 @@ int main()
         exit(0); 
     } 
     else
-        printf("server acccept the client...\n"); 
+        printf("[+]Server acccept the client...\n"); 
   
-    // Function for chatting between client and server 
-    func(connfd); 
+    // Funcion para el chat
+    if(fork() == 0){
+        readFuncion(connfd);
+    }else{
+        writeFuncion(connfd);
+    }
   
     // After chatting close the socket 
     close(sockfd); 
