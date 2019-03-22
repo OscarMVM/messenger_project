@@ -1,24 +1,27 @@
-#include <stdio.h>
-#include <netdb.h>
+include <netdb.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/socket.h>
+#include <stdio.h>
 #define MAX 80 
-#define PORT 8080
 #define SA struct sockaddr 
 #define COLOR_BLUE    "\x1b[34m"
 #define COLOR_GREEN   "\x1b[32m"
 #define COLOR_RED     "\x1b[31m"
 #define COLOR_RESET   "\x1b[0m"
+#define LENGTH_NAME 31
+#define LENGTH_PORT 11
 
 
-void ChildProcess(int sockfd)
+
+void WriteProcess(int sockfd)
 {
 	char buff[MAX]; 
     	int n; 
     	for (;;) { 
-        	bzero(buff, sizeof(buff)); 
-        	printf(COLOR_BLUE "Escribe Mensaje : "); 
+        	bzero(buff, sizeof(buff));
+		COLOR_BLUE; 
+        	printf(COLOR_BLUE ">"); 
         	n = 0; 
         	while ((buff[n++] = getchar()) != '\n') 
             	; 
@@ -28,60 +31,105 @@ void ChildProcess(int sockfd)
             		break; 
         	} 
     	} 
-	printf("Child process is done\n");
 }
 
-void ParentProcess(int sockfd)
+void ReadProcess(int sockfd)
 {
 	char buff[MAX]; 
     	int n; 
     	for (;;) {  
         	bzero(buff, sizeof(buff)); 
         	read(sockfd, buff, sizeof(buff)); 
-        	printf(COLOR_GREEN "\nFrom Server : %s", buff, COLOR_BLUE, "\nEscribe mensaje:"); 
+        	printf(COLOR_GREEN "\n>%s", buff); 
         	if ((strncmp(buff, "exit", 4)) == 0) { 
             		printf("Client Exit...\n"); 
             		break; 
         	} 
     	} 
-	printf("Parent is donde\n");
 }
 
+void str_trim_lf (char* arr, int length) {
+    int i;
+    for (i = 0; i < length; i++) { // trim \n
+        if (arr[i] == '\n') {
+            arr[i] = '\0';
+            break;
+        }
+    }
+}
+
+
+int readFilePort(){
+	int number;
+	FILE *fp;
+	fp = fopen("port.conf", "r"); // read mode
+	if (fp == NULL)
+       {
+          perror("Error while opening the file.\n");
+          exit(EXIT_FAILURE);
+       }
+	
+	fscanf(fp, "%d", &number);
+	printf("Port is: %d\n\n", number);
+
+	fclose(fp);
+	return(number);
+}
+
+
+
 void main(void){
+	//Ask for the nickname and validates
+	char nickname[LENGTH_NAME] = {};
+	printf("Please enter your nickname: ");
+	
+	if (fgets(nickname, LENGTH_NAME, stdin) != NULL) {
+        	str_trim_lf(nickname, LENGTH_NAME);
+    	}
+    	if (strlen(nickname) < 2 || strlen(nickname) >= LENGTH_NAME-1) {
+        	printf("\nNickname must be more than one and less than thirty characters.\n");
+        	exit(EXIT_FAILURE);
+	}
+
+	//Read file Port
+	int PORT;
+	PORT = readFilePort();
+
+	//Socket create and varification
 	int sockfd, connfd;
 	struct sockaddr_in servaddr, cli;
 
-	//Creacion de socekt y validacion
 	sockfd = socket(AF_INET, SOCK_STREAM, 0);
 	if (sockfd == -1){
-		printf("Error al crear el socket...\n");
+		printf("[-]Socket creation failed...\n");
 		exit(0);
 	}
 	else
-		printf("Socket creado con exito...\n");
+		printf("[+]Socket successfully binded...\n");
 	bzero(&servaddr,sizeof(servaddr));
 
-	//Asigna IP, PORT
+	//Assign IP, PORT
 	servaddr.sin_family = AF_INET;
 	servaddr.sin_addr.s_addr = inet_addr("127.0.0.1");
 	servaddr.sin_port = htons(PORT);
 
-	//Conectar cliente sockets a servidor sockets
+	//Connect the client socket to server socket
 	if (connect(sockfd, (SA*)&servaddr, sizeof(servaddr)) != 0){
-		printf("Error de conexion con el servidor...\n");
+		printf("[-]Connection with the server failed...\n");
 		exit(0);
 	}
 	else
-		printf("Exito de conexion con el servidor...\n");
-	//Funcion para el chat
+		printf("[+]Connected to the server...\n");
+	
+	//Function fork() for the chat
 	pid_t pid;
 	pid = fork();
 	if(pid == 0)
-		ChildProcess(sockfd);
+		WriteProcess(sockfd);
 	else
-		ParentProcess(sockfd);	
+		ReadProcess(sockfd);	
 
-	//Cerrar socket
+	//Close socket
 	close(sockfd);
 
 }

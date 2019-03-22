@@ -29,7 +29,8 @@ void send_to_all_clients(ClientList *np, char tmp_buffer[]) {
     while (tmp != NULL) {
         if (np->data != tmp->data) { // all clients except itself.
             printf("Send to sockfd %d: \"%s\" \n", tmp->data, tmp_buffer);
-            send(tmp->data, tmp_buffer, LENGTH_SEND, 0);
+	    write(tmp->data, tmp_buffer, LENGTH_SEND);
+            //send(tmp->data, tmp_buffer, LENGTH_SEND, 0);
         }
         tmp = tmp->link;
     }
@@ -154,11 +155,12 @@ int main()
 	now = c;
 
         if((childpid = fork()) == 0){
-		client_handler(c);
+		client_handler((void*)c);
 	}
     }
 
     close(server_sockfd);
     return 0; 
 } 
+
 
