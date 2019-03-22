@@ -35,6 +35,7 @@ void send_to_all_clients(ClientList *np, char tmp_buffer[]) {
     }
 }
 
+
 void client_handler(void *p_client) {
     int leave_flag = 0;
     char nickname[LENGTH_NAME] = {};
@@ -49,7 +50,7 @@ void client_handler(void *p_client) {
     } else {
         strncpy(np->name, nickname, LENGTH_NAME);
         printf("%s:(%s)(%d) join the chatroom.\n", np->name, np->ip, np->data);
-        sprintf(send_buffer, "%s:(%s) join the chatroom.", np->name, np->ip);
+        sprintf(send_buffer, "%s:(%d) join the chatroom.", np->name, np->data);
         send_to_all_clients(np, send_buffer);
     }
 
@@ -63,7 +64,7 @@ void client_handler(void *p_client) {
             if (strlen(recv_buffer) == 0) {
                 continue;
             }
-            sprintf(send_buffer, "%s：%s from %s", np->name, recv_buffer, np->ip);
+            sprintf(send_buffer, "%s : %s from %s", np->name, recv_buffer, np->ip);
         } else if (receive == 0 || strcmp(recv_buffer, "exit") == 0) {
             printf("%s(%s)(%d) leave the chatroom.\n", np->name, np->ip, np->data);
             sprintf(send_buffer, "%s(%s) leave the chatroom.", np->name, np->ip);
@@ -106,8 +107,8 @@ int main()
     int c_addrlen = sizeof(client_info);
     memset(&server_info, 0, s_addrlen);
     memset(&client_info, 0, c_addrlen);	 
-    server_info.sin_family = AF_INET; 
-    server_info.sin_addr.s_addr = htonl(INADDR_ANY); 
+    server_info.sin_family = PF_INET; 
+    server_info.sin_addr.s_addr = INADDR_ANY; 
     server_info.sin_port = htons(PORT); 
   
     // Binding newly created socket to given IP and verification 
@@ -138,7 +139,8 @@ int main()
     while(1){
         // Accept the data packet from client and verification 
         client_sockfd = accept(server_sockfd, (SA*)&client_info, &s_addrlen); 
-    
+    	getpeername(client_sockfd, (struct sockaddr*) &client_info, (socklen_t*) &c_addrlen);
+	printf("Client %s:%d come in.\n", inet_ntoa(client_info.sin_addr), ntohs(client_info.sin_port));
         if (client_sockfd < 0) { 
             printf("[-]server acccept failed...\n"); 
             exit(0); 
@@ -151,11 +153,8 @@ int main()
 	now->link = c;
 	now = c;
 
-        pthread_t id;
-
-        if (pthread_create(&id, NULL, (void *)client_handler, (void *)c) != 0) {
-            perror("Create pthread error!\n");
-            exit(EXIT_FAILURE);
+        if((childpid = fork()) == 0){
+		client_handler(c);
 	}
     }
 
