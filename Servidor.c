@@ -1,11 +1,15 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h> 
+#include <string.h>
+#include <stddef.h> 
 #include <netdb.h> 
 #include <netinet/in.h>  
 #include <sys/socket.h> 
 #include <sys/types.h> 
 #include <arpa/inet.h>
+#include <unistd.h>
+#include <pthread.h>
+#include <signal.h>
 #include "Servidor.h"
 #define MAX 80 
 #define PORT 8080
@@ -16,31 +20,8 @@
 #define COLOR_BLUE    "\x1b[34m" 
 #define COLOR_GREEN   "\x1b[32m"
 
+int server_sockfd = 0, client_sockfd = 0;
 ClientList *root, *now;
-
-void readFuncion(int sockfd){
-    char buff[MAX]; 	
-    for(;;){
-        bzero(buff, MAX); 
-	// read the message from client and copy it in buffer 
-        read(sockfd, buff, sizeof(buff)); 
-        // print buffer which contains the client contents 
-        printf(COLOR_GREEN "Desde el Cliente: %s", buff);     
-    }
-}
-
-void writeFuncion(int sockfd){
-    char buff[MAX]; 
-    int n; 
-    for(;;){
-	bzero(buff, MAX);
-	n = 0;
-        // copy server message in the buffer 
-        while ((buff[n++] = getchar()) != '\n'); 
-  	// send that buffer to client 
-        write(sockfd, buff, sizeof(buff)); 
-    }
-} 
 
 
 void send_to_all_clients(ClientList *np, char tmp_buffer[]) {
@@ -84,14 +65,14 @@ void client_handler(void *p_client) {
             }
             sprintf(send_buffer, "%s：%s from %s", np->name, recv_buffer, np->ip);
         } else if (receive == 0 || strcmp(recv_buffer, "exit") == 0) {
-            printf("%s:(%s)(%d) leave the chatroom.\n", np->name, np->ip, np->data);
+            printf("%s(%s)(%d) leave the chatroom.\n", np->name, np->ip, np->data);
             sprintf(send_buffer, "%s(%s) leave the chatroom.", np->name, np->ip);
             leave_flag = 1;
         } else {
             printf("Fatal Error: -1\n");
             leave_flag = 1;
         }
-        //send_to_all_clients(np, send_buffer);
+	send_to_all_clients(np, send_buffer);
     }
 
     // Remove Node
@@ -109,8 +90,6 @@ void client_handler(void *p_client) {
 // Driver function 
 int main() 
 { 	
-
-    int server_sockfd, client_sockfd, len; 
     struct sockaddr_in server_info, client_info; 
   
     // Socket create and verification 
@@ -172,8 +151,11 @@ int main()
 	now->link = c;
 	now = c;
 
-	if((childpid = fork()) == 0){
-	    client_handler((void *)c);
+        pthread_t id;
+
+        if (pthread_create(&id, NULL, (void *)client_handler, (void *)c) != 0) {
+            perror("Create pthread error!\n");
+            exit(EXIT_FAILURE);
 	}
     }
 
