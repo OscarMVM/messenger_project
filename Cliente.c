@@ -3,14 +3,16 @@
 #include <string.h>
 #include <sys/socket.h>
 #include <stdio.h>
+#include <libconfig.h>
 #define MAX 80 
-#define PORT 8080
+//#define PORT 8080
 #define SA struct sockaddr 
 #define COLOR_BLUE    "\x1b[34m"
 #define COLOR_GREEN   "\x1b[32m"
 #define COLOR_RED     "\x1b[31m"
 #define COLOR_RESET   "\x1b[0m"
 #define LENGTH_NAME 31
+#define LENGTH_PORT 11
 
 
 
@@ -58,9 +60,29 @@ void str_trim_lf (char* arr, int length) {
     }
 }
 
+
+int readFilePort(){
+	FILE *fp;
+	fp = fopen("port.conf", "r"); // read mode
+	if (fp == NULL)
+       {
+          perror("Error while opening the file.\n");
+          exit(EXIT_FAILURE);
+       }
+	
+	fscanf(fp, "%d", &number);
+	printf("Port is: %d\n\n", number);
+
+	fclose(fp);
+	return(number);
+}
+
+
+
 void main(void){
 	char nickname[LENGTH_NAME] = {};
-
+	int PORT;
+	
 	//Ask for the nickname and validates
 	printf("Please enter your nickname: ");
 	
@@ -71,6 +93,9 @@ void main(void){
         	printf("\nNickname must be more than one and less than thirty characters.\n");
         	exit(EXIT_FAILURE);
 	}
+
+	//Read file Port
+	PORT = readFilePort();
 
 	int sockfd, connfd;
 	struct sockaddr_in servaddr, cli;
