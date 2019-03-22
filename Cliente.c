@@ -3,9 +3,7 @@
 #include <string.h>
 #include <sys/socket.h>
 #include <stdio.h>
-#include <libconfig.h>
 #define MAX 80 
-//#define PORT 8080
 #define SA struct sockaddr 
 #define COLOR_BLUE    "\x1b[34m"
 #define COLOR_GREEN   "\x1b[32m"
@@ -16,7 +14,7 @@
 
 
 
-void ChildProcess(int sockfd)
+void WriteProcess(int sockfd)
 {
 	char buff[MAX]; 
     	int n; 
@@ -35,7 +33,7 @@ void ChildProcess(int sockfd)
     	} 
 }
 
-void ParentProcess(int sockfd)
+void ReadProcess(int sockfd)
 {
 	char buff[MAX]; 
     	int n; 
@@ -81,10 +79,8 @@ int readFilePort(){
 
 
 void main(void){
-	char nickname[LENGTH_NAME] = {};
-	int PORT;
-	
 	//Ask for the nickname and validates
+	char nickname[LENGTH_NAME] = {};
 	printf("Please enter your nickname: ");
 	
 	if (fgets(nickname, LENGTH_NAME, stdin) != NULL) {
@@ -96,12 +92,13 @@ void main(void){
 	}
 
 	//Read file Port
+	int PORT;
 	PORT = readFilePort();
 
+	//Socket create and varification
 	int sockfd, connfd;
 	struct sockaddr_in servaddr, cli;
 
-	//Socket create and varification
 	sockfd = socket(AF_INET, SOCK_STREAM, 0);
 	if (sockfd == -1){
 		printf("[-]Socket creation failed...\n");
@@ -128,9 +125,9 @@ void main(void){
 	pid_t pid;
 	pid = fork();
 	if(pid == 0)
-		ChildProcess(sockfd);
+		WriteProcess(sockfd);
 	else
-		ParentProcess(sockfd);	
+		ReadProcess(sockfd);	
 
 	//Close socket
 	close(sockfd);
