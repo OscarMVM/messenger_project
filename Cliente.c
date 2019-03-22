@@ -62,6 +62,7 @@ void str_trim_lf (char* arr, int length) {
 
 
 int readFilePort(){
+	int number;
 	FILE *fp;
 	fp = fopen("port.conf", "r"); // read mode
 	if (fp == NULL)
