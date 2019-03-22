@@ -8,19 +8,14 @@
 #include <arpa/inet.h>
 #include "Servidor.h"
 #define MAX 80 
-<<<<<<< HEAD
 #define PORT 8080
 #define LENGTH_NAME 31
 #define LENGTH_MSG 101
 #define LENGTH_SEND 201 
-=======
-#define PORT 8080 
->>>>>>> master
 #define SA struct sockaddr
 #define COLOR_BLUE    "\x1b[34m" 
 #define COLOR_GREEN   "\x1b[32m"
 
-<<<<<<< HEAD
 ClientList *root, *now;
 
 void readFuncion(int sockfd){
@@ -31,24 +26,6 @@ void readFuncion(int sockfd){
         read(sockfd, buff, sizeof(buff)); 
         // print buffer which contains the client contents 
         printf(COLOR_GREEN "Desde el Cliente: %s", buff);     
-=======
-
-void readFuncion(int sockfd){
-    char buff[MAX]; 
-    int n; 	
-    for(;;){
-	// read the message from client and copy it in buffer 
-        read(sockfd, buff, sizeof(buff)); 
-        // print buffer which contains the client contents 
-        printf(COLOR_GREEN "Desde el Cliente: %s", buff); 
-        n = 0;
-	// if msg contains "Exit" then server exit and chat ended. 
-        if (strncmp("exit", buff, 4) == 0) { 
-            printf("Server Exit...\n"); 
-            break; 
-        }
-        bzero(buff, MAX);    
->>>>>>> master
     }
 }
 
@@ -56,11 +33,8 @@ void writeFuncion(int sockfd){
     char buff[MAX]; 
     int n; 
     for(;;){
-<<<<<<< HEAD
 	bzero(buff, MAX);
 	n = 0;
-=======
->>>>>>> master
         // copy server message in the buffer 
         while ((buff[n++] = getchar()) != '\n'); 
   	// send that buffer to client 
@@ -68,7 +42,6 @@ void writeFuncion(int sockfd){
     }
 } 
 
-<<<<<<< HEAD
 
 void send_to_all_clients(ClientList *np, char tmp_buffer[]) {
     ClientList *tmp = root->link;
@@ -94,8 +67,8 @@ void client_handler(void *p_client) {
         leave_flag = 1;
     } else {
         strncpy(np->name, nickname, LENGTH_NAME);
-        printf("%s(%s)(%d) join the chatroom.\n", np->name, np->ip, np->data);
-        sprintf(send_buffer, "%s(%s) join the chatroom.", np->name, np->ip);
+        printf("%s:(%s)(%d) join the chatroom.\n", np->name, np->ip, np->data);
+        sprintf(send_buffer, "%s:(%s) join the chatroom.", np->name, np->ip);
         send_to_all_clients(np, send_buffer);
     }
 
@@ -111,7 +84,7 @@ void client_handler(void *p_client) {
             }
             sprintf(send_buffer, "%s：%s from %s", np->name, recv_buffer, np->ip);
         } else if (receive == 0 || strcmp(recv_buffer, "exit") == 0) {
-            printf("%s(%s)(%d) leave the chatroom.\n", np->name, np->ip, np->data);
+            printf("%s:(%s)(%d) leave the chatroom.\n", np->name, np->ip, np->data);
             sprintf(send_buffer, "%s(%s) leave the chatroom.", np->name, np->ip);
             leave_flag = 1;
         } else {
@@ -132,8 +105,6 @@ void client_handler(void *p_client) {
     }
     free(np);
 }
-=======
->>>>>>> master
   
 // Driver function 
 int main() 
@@ -147,7 +118,6 @@ int main()
     if (server_sockfd == -1) { 
         printf("[-]Socket creation failed...\n"); 
         exit(0); 
-<<<<<<< HEAD
     }else{
         printf("[+]Socket successfully created...\n");
     }
@@ -160,38 +130,19 @@ int main()
     server_info.sin_family = AF_INET; 
     server_info.sin_addr.s_addr = htonl(INADDR_ANY); 
     server_info.sin_port = htons(PORT); 
-=======
-    } 
-    else
-        printf("[+]Socket successfully created..\n"); 
-    bzero(&servaddr, sizeof(servaddr)); 
-  
-    // assign IP, PORT 
-    servaddr.sin_family = AF_INET; 
-    servaddr.sin_addr.s_addr = htonl(INADDR_ANY); 
-    servaddr.sin_port = htons(PORT); 
->>>>>>> master
   
     // Binding newly created socket to given IP and verification 
     if ((bind(server_sockfd, (SA*)&server_info, s_addrlen)) != 0) { 
         printf("[-]Socket bind failed...\n"); 
         exit(0); 
-<<<<<<< HEAD
     }else{
         printf("[+]Socket successfully binded...\n"); 
     }
 
-=======
-    } 
-    else
-        printf("[+]Socket successfully binded..\n"); 
-  
->>>>>>> master
     // Now server is ready to listen and verification 
     if ((listen(server_sockfd, 5)) != 0) { 
         printf("[-]Listen failed...\n"); 
         exit(0); 
-<<<<<<< HEAD
     }else{
         printf("[+]Server listening...\n"); 
     }
@@ -228,30 +179,5 @@ int main()
 
     close(server_sockfd);
     return 0; 
-=======
-    } 
-    else
-        printf("[+]Server listening...\n"); 
-    len = sizeof(cli); 
-  
-    // Accept the data packet from client and verification 
-    connfd = accept(sockfd, (SA*)&cli, &len); 
-    if (connfd < 0) { 
-        printf("server acccept failed...\n"); 
-        exit(0); 
-    } 
-    else
-        printf("[+]Server acccept the client...\n"); 
-  
-    // Funcion para el chat
-    if(fork() == 0){
-        readFuncion(connfd);
-    }else{
-        writeFuncion(connfd);
-    }
-  
-    // After chatting close the socket 
-    close(sockfd); 
->>>>>>> master
 } 
 
