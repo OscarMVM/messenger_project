@@ -4,17 +4,17 @@
 #include <sys/socket.h>
 #include <stdio.h>
 #define MAX 80 
-#define PORT 8080
 #define SA struct sockaddr 
 #define COLOR_BLUE    "\x1b[34m"
 #define COLOR_GREEN   "\x1b[32m"
 #define COLOR_RED     "\x1b[31m"
 #define COLOR_RESET   "\x1b[0m"
 #define LENGTH_NAME 31
+#define LENGTH_PORT 11
 
 
 
-void ChildProcess(int sockfd)
+void WriteProcess(int sockfd)
 {
 	char buff[MAX]; 
     	int n; 
@@ -33,7 +33,7 @@ void ChildProcess(int sockfd)
     	} 
 }
 
-void ParentProcess(int sockfd)
+void ReadProcess(int sockfd)
 {
 	char buff[MAX]; 
     	int n; 
@@ -58,10 +58,29 @@ void str_trim_lf (char* arr, int length) {
     }
 }
 
-void main(void){
-	char nickname[LENGTH_NAME] = {};
 
+int readFilePort(){
+	int number;
+	FILE *fp;
+	fp = fopen("port.conf", "r"); // read mode
+	if (fp == NULL)
+       {
+          perror("Error while opening the file.\n");
+          exit(EXIT_FAILURE);
+       }
+	
+	fscanf(fp, "%d", &number);
+	printf("Port is: %d\n\n", number);
+
+	fclose(fp);
+	return(number);
+}
+
+
+
+void main(void){
 	//Ask for the nickname and validates
+	char nickname[LENGTH_NAME] = {};
 	printf("Please enter your nickname: ");
 	
 	if (fgets(nickname, LENGTH_NAME, stdin) != NULL) {
@@ -72,10 +91,14 @@ void main(void){
         	exit(EXIT_FAILURE);
 	}
 
+	//Read file Port
+	int PORT;
+	PORT = readFilePort();
+
+	//Socket create and varification
 	int sockfd, connfd;
 	struct sockaddr_in servaddr, cli;
 
-	//Socket create and varification
 	sockfd = socket(AF_INET, SOCK_STREAM, 0);
 	if (sockfd == -1){
 		printf("[-]Socket creation failed...\n");
@@ -102,9 +125,9 @@ void main(void){
 	pid_t pid;
 	pid = fork();
 	if(pid == 0)
-		ChildProcess(sockfd);
+		WriteProcess(sockfd);
 	else
-		ParentProcess(sockfd);	
+		ReadProcess(sockfd);	
 
 	//Close socket
 	close(sockfd);
