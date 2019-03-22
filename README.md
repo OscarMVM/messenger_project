@@ -1,9 +1,13 @@
 Tarea Programada #1
+
 Lenguajes de programación
+
 Tecnológico de Costa Rica
+
 Documentación Messenger en C
 
 Integrantes: Natalia Rodríguez y Oscar Vega
+
 Fecha: 22 de Marzo del 2019
 
 En la actualidad existen innovadores medios de comunicación, uno de estos son los chats virtuales. En el siguiente documento se describe el programa de software desarrollado. Messenger es un programa de mensajería entre varios usuarios. 
