@@ -7,8 +7,11 @@ Integrantes: Natalia Rodríguez y Oscar Vega
 Fecha: 22 de Marzo del 2019
 
 En la actualidad existen innovadores medios de comunicación, uno de estos son los chats virtuales. En el siguiente documento se describe el programa de software desarrollado. Messenger es un programa de mensajería entre varios usuarios. 
+    
     En este proyecto se desarrolló un programa que contiene un servidor central que almacena la información de los usuarios. Los usuarios se pueden mandar mensajes a través del servidor, esto quiere decir que si un usuario A quiere mandar un mensaje al usuario B, tiene que mandarlo por medio del servidor central.
+    
     Al comenzar la ejecución del programa, el servidor se conecta por medio de sockets con los clientes. Cada cliente digita un nombre de usuario donde se van almacenar en el servidor central, además se obtiene de forma automática el IP del usuario. Se va a manejar un archivo de configuración donde se almacena el puerto de los clientes. El programa de los clientes lee este archivo automáticamente, para conectarse con el servidor. 
+    
     Para recibir y enviar mensajes de manera simultánea, se utiliza la función de fork, que funciona de la siguiente manera: Esta genera un duplicado del proceso actual. El duplicado comparte los valores actuales de todas las variables, fichero y otras estructuras de datos. La llamada a fork retorna al proceso padre el identificador del proceso hijo y retorna un cero al proceso hijo. 
 
 
